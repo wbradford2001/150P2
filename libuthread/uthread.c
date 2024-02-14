@@ -70,7 +70,7 @@ void uthread_exit(void)
 	
 	struct uthread_tcb *tmp = curThread;
 	curThread = nextTCB;
-	queue_iterate(mainQ, print_queue);
+	//queue_iterate(mainQ, print_queue);
 	
 		uthread_ctx_switch(tmp->context, nextTCB->context);
 	
