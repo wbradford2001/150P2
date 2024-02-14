@@ -38,12 +38,12 @@ struct uthread_tcb *uthread_current(void)
 	/* TODO Phase 2/3 */
 
 }
-static void print_queue(queue_t q, void *data)
-{
+// static void print_queue(queue_t q, void *data)
+// {
 
-    printf("TID: %d\n", ((struct uthread_tcb*)data)->TID);
+//     printf("TID: %d\n", ((struct uthread_tcb*)data)->TID);
 
-}
+// }
 void uthread_yield(void)
 {
 	/* TODO Phase 2 */
