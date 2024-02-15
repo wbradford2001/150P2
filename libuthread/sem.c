@@ -19,7 +19,7 @@ sem_t sem_create(size_t count)
 	/* TODO Phase 3 */
 	struct semaphore *newSem = malloc(sizeof(struct semaphore*));
 
-	newSem->count = 0;
+	newSem->count = count;
 
 	return newSem;
 
