@@ -38,12 +38,12 @@ struct uthread_tcb *uthread_current(void)
 	/* TODO Phase 2/3 */
 
 }
-// static void print_queue(queue_t q, void *data)
-// {
+static void print_queue(queue_t q, void *data)
+{
 
-//     printf("TID: %d\n", ((struct uthread_tcb*)data)->TID);
+    printf("TID: %d\n", ((struct uthread_tcb*)data)->TID);
 
-// }
+}
 void uthread_yield(void)
 {
 	/* TODO Phase 2 */
@@ -63,15 +63,23 @@ void uthread_yield(void)
 
 void uthread_exit(void)
 {
-//	printf("exiting now: %d\n", curThread->TID);
+
 	struct uthread_tcb *nextTCB = malloc(sizeof(struct uthread_tcb*));
-	queue_enqueue(mainQ, curThread);
+
+
+	
+
+
 	queue_dequeue(mainQ, (void**)&nextTCB);
+		
+	queue_enqueue(mainQ, curThread);
 	
 	struct uthread_tcb *tmp = curThread;
 	curThread = nextTCB;
-	//queue_iterate(mainQ, print_queue);
 	
+	if (queue_length(mainQ)==1){
+		preempt_stop();
+	}
 		uthread_ctx_switch(tmp->context, nextTCB->context);
 	
 	
@@ -101,7 +109,12 @@ int uthread_create(uthread_func_t func, void *arg)
 
 int uthread_run(bool preempt, uthread_func_t func, void *arg)
 {
-//	printf("running thread\n");
+	//printf("running thread\n");
+
+
+	preempt_start(1);
+
+	
 
 	mainTCB = malloc(sizeof(struct uthread_tcb*));
 	

@@ -9,9 +9,12 @@ objects := queue.o
 # 	$(CC) $(CFLAGS) -o $@ $^
 
 
-libuthread.a: queue.o uthread.o context.o sem.o
-	ar rcs libuthread.a queue.o uthread.o context.o preempt.o sem.o
+libuthread.a: queue.o uthread.o context.o sem.o preempt.o
+	ar rcs libuthread.a queue.o uthread.o context.o preempt.o sem.o preempt.o
 	
+preempt.o: preempt.c private.h
+	gcc -O -c preemt.c
+
 sem.o: sem.c sem.c
 	gcc -O -c sem.c sem.h
 
