@@ -49,6 +49,6 @@ void thread1(void *arg)
 
 int main(void)
 {
-	uthread_run(false, thread1, NULL);
+	uthread_run(1, thread1, NULL);
 	return 0;
 }

@@ -100,13 +100,13 @@ int queue_dequeue(queue_t queue, void **data)
 
 int queue_delete(queue_t queue, void *data)
 {
+	static struct Node *prevNode;
 
 
 	if (!queue || !data){
 		return -1;
 	}
 	struct Node *curNode = queue->head;
-	struct Node *prevNode;
 	while (curNode){
 		//printf("%p, %p\n", curNode->val, data);
 		if (curNode->val==data){
@@ -121,6 +121,7 @@ int queue_delete(queue_t queue, void *data)
 				prevNode->next = NULL;
 				
 			} else {
+
 				prevNode->next = curNode->next;
 				return 0;
 			}

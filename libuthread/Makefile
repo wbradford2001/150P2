@@ -1,33 +1,34 @@
 # Target library
 lib := libuthread.a
 
+ifneq ($(V),1)
+Q=@
+endif
+
+
+
 all: $(lib)
 
-objects := queue.o
-## TODO: Phase 1
-# libuthread.a: $(objs)
-# 	$(CC) $(CFLAGS) -o $@ $^
+objects := queue.o uthread.o context.o sem.o preempt.o
+
+CC := gcc
+CFlags := -Wall -Werror -Wextra -MMD
 
 
-libuthread.a: queue.o uthread.o context.o sem.o preempt.o
-	ar rcs libuthread.a queue.o uthread.o context.o preempt.o sem.o preempt.o
-	
-preempt.o: preempt.c private.h
-	gcc -O -c preemt.c
+#dependency tracking
+deps := $(patsubst %.o, %.d, $(objects))
+-include $(deps)
 
-sem.o: sem.c sem.c
-	gcc -O -c sem.c sem.h
 
-uthread.o: uthread.c uthread.h context.o private.h preempt.o queue.o queue.h
-	gcc -O -c uthread.c context.o preempt.o queue.o
+libuthread.a: $(objects)
+	@echo "CC $@"
+	$(Q)ar rcs $@ $^
 
-preempt.o: preempt.c private.h
-	gcc -O -c preempt.c private.h
+%.o: %.c
+	@echo "CC $@"
+	$(Q)$(CC) $(CFlags) -O -c $@ $<
 
-context.o: context.c private.h
-	gcc -O -c context.c private.h
+clean: 
+	$(Q)rm -f $(lib) $(objects) $(deps)
 
-queue.o: queue.c queue.h
-	gcc -O -c queue.c
-# %.o: %.c
-# 	$(CC) $(CFLAGS) -c -o $@ $<
+
