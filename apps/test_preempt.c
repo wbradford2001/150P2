@@ -1,14 +1,9 @@
 /*
- * Thread creation and yielding test
- *
- * Tests the creation of multiples threads and the fact that a parent thread
- * should get returned to before its child is executed. The way the printing,
- * thread creation and yielding is done, the program should output:
- *
- * thread1
- * thread2
- * thread3
+This is similar  the uthread_yield test case but with an infinite loop. 
+If you enter 0 as the preempt argument for uthread_run(preempt), the program is stuck in an infinite loop
  */
+
+
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -16,23 +11,15 @@
 
 #include <uthread.h>
 
-void thread3(void *arg)
-{
-	(void)arg;
 
-	uthread_yield();
-	printf("THREAD3\n");
-
-}
-
+//Thread 2 wont run unless preempt is enabled
 void thread2(void *arg)
 {
 	(void)arg;
-
-	uthread_create(thread3, NULL);
 	uthread_yield();
 	printf("THREAD2\n");
 }
+
 
 void thread1(void *arg)
 {
@@ -41,14 +28,20 @@ void thread1(void *arg)
 	uthread_create(thread2, NULL);
 	uthread_yield();
 	printf("THREAD1\n");
+
+
+	//INFINITE LOOP
 	while (1){
-		
+		//If preempt is not enabled, this loop will run indefenitely
 	}
+
+
 	uthread_yield();
 }
 
 int main(void)
 {
+	//start off thread process
 	uthread_run(1, thread1, NULL);
 	return 0;
 }
