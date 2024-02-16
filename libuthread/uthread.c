@@ -90,6 +90,8 @@ int uthread_create(uthread_func_t func, void *arg)
 {
 	/* TODO Phase 2 */
 	//printf("creating thread: %d\n", numTCB+1);
+
+	preempt_disable();
 	struct uthread_tcb *newTCB = malloc(sizeof(struct uthread_tcb*));
 	
 	newTCB->top_of_stack= uthread_ctx_alloc_stack();
@@ -97,6 +99,8 @@ int uthread_create(uthread_func_t func, void *arg)
 	newTCB->context = malloc(sizeof(uthread_ctx_t));
 	numTCB++;
 	newTCB->TID=numTCB;
+
+	preempt_enable();
 
 
 	uthread_ctx_init(newTCB->context, newTCB->top_of_stack,func, arg);
@@ -114,7 +118,7 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 
 	preempt_start(1);
 
-	
+	preempt_disable();
 
 	mainTCB = malloc(sizeof(struct uthread_tcb*));
 	
@@ -123,6 +127,7 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 	mainTCB->context = malloc(sizeof(uthread_ctx_t));
 
 	// uthread_ctx_init(mainTCB->context, mainTCB->top_of_stack,loop, arg);
+
 
 
 
@@ -145,7 +150,7 @@ int uthread_run(bool preempt, uthread_func_t func, void *arg)
 
 	queue_enqueue(mainQ, newTCB);
 
-
+	preempt_enable();
 
 	while (1){
 

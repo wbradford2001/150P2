@@ -15,6 +15,8 @@
  */
 #define HZ 100
 
+#define numMicroSecondsInSec 1000000
+
 
 static sigset_t preemptAlarm;
 
@@ -26,7 +28,7 @@ static struct sigaction sigAct;
 static struct sigaction oldSigAct;
 
 
-static struct itimerval timer; // when a timer should expire
+static struct itimerval timer; 
 
 static struct itimerval oldTimer;
 
@@ -73,16 +75,20 @@ void preempt_start(bool preempt)
 	}
 	sigAct.sa_handler=handler; 
 	sigemptyset(&sigAct.sa_mask);
-	sigAct.sa_flags=0;
-	timer.it_interval.tv_sec=0; 
-	timer.it_value.tv_sec=0;
-	timer.it_interval.tv_usec = (long int)(1.0/HZ*1000000);
-	timer.it_value.tv_usec = (long int)(1.0/HZ*1000000);
 	sigemptyset(&preemptAlarm);
+
 	sigaddset(&preemptAlarm,SIGVTALRM); 
-	sigaction(SIGVTALRM,&sigAct,&oldSigAct);  
-	sigprocmask(SIG_SETMASK,NULL,&oldSigSet); // keep track of old set
+
+	sigAct.sa_flags=0;
+	timer.it_interval.tv_usec = (float)((float)numMicroSecondsInSec)*(1/(float)(HZ));
+	
+	timer.it_value.tv_usec = (float)((float)numMicroSecondsInSec)*(1/(float)(HZ));
 	setitimer(ITIMER_VIRTUAL,&timer,&oldTimer);
+
+
+
+	sigaction(SIGVTALRM,&sigAct,&oldSigAct);  
+	sigprocmask(SIG_SETMASK,NULL,&oldSigSet);
 }
 
 void preempt_stop(void)
