@@ -17,14 +17,17 @@
 
 
 static sigset_t preemptAlarm;
+
 static sigset_t oldSigSet;
 
 
 static struct sigaction sigAct;
+
 static struct sigaction oldSigAct;
 
 
 static struct itimerval timer; // when a timer should expire
+
 static struct itimerval oldTimer;
 
 static bool enabled;
@@ -38,7 +41,7 @@ void preempt_disable(void)
 		return;
 	}
 	/* TODO Phase 4 */
-	sigprocmask(SIG_BLOCK, &preemptAlarm, NULL);
+	sigprocmask(SIG_BLOCK,&preemptAlarm,NULL);
 }
 
 void preempt_enable(void)
@@ -47,7 +50,7 @@ void preempt_enable(void)
 		return;
 	}
 	/* TODO Phase 4 */
-	sigprocmask(SIG_UNBLOCK, &preemptAlarm, NULL);
+	sigprocmask(SIG_UNBLOCK,&preemptAlarm,NULL);
 
 }
 
@@ -68,18 +71,18 @@ void preempt_start(bool preempt)
 	} else {
 		enabled = true;
 	}
-	sigAct.sa_handler = handler; 
+	sigAct.sa_handler=handler; 
 	sigemptyset(&sigAct.sa_mask);
-	sigAct.sa_flags = 0;
-	timer.it_interval.tv_sec = 0; 
-	timer.it_value.tv_sec = 0;
-	timer.it_interval.tv_usec = (long int) (1.0 / HZ * 1000000);
-	timer.it_value.tv_usec = (long int) (1.0 / HZ * 1000000);
+	sigAct.sa_flags=0;
+	timer.it_interval.tv_sec=0; 
+	timer.it_value.tv_sec=0;
+	timer.it_interval.tv_usec = (long int)(1.0/HZ*1000000);
+	timer.it_value.tv_usec = (long int)(1.0/HZ*1000000);
 	sigemptyset(&preemptAlarm);
-	sigaddset(&preemptAlarm, SIGVTALRM); 
-	sigaction(SIGVTALRM, &sigAct, &oldSigAct);  
-	sigprocmask(SIG_SETMASK, NULL, &oldSigSet); // keep track of old set
-	setitimer(ITIMER_VIRTUAL, &timer, &oldTimer);
+	sigaddset(&preemptAlarm,SIGVTALRM); 
+	sigaction(SIGVTALRM,&sigAct,&oldSigAct);  
+	sigprocmask(SIG_SETMASK,NULL,&oldSigSet); // keep track of old set
+	setitimer(ITIMER_VIRTUAL,&timer,&oldTimer);
 }
 
 void preempt_stop(void)
@@ -87,13 +90,13 @@ void preempt_stop(void)
 	if (!enabled){
 		return;
 	}
-	sigprocmask(SIG_SETMASK, &oldSigSet, NULL);
+	sigprocmask(SIG_SETMASK,&oldSigSet,NULL);
 
 
-	sigaction(SIGVTALRM, &oldSigAct, NULL);
+	sigaction(SIGVTALRM,&oldSigAct,NULL);
 
 
-	setitimer(SIGVTALRM, &oldTimer, NULL);
+	setitimer(SIGVTALRM,&oldTimer,NULL);
 	
 }
 
