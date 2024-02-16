@@ -77,7 +77,6 @@ void enqueue_test_one()
 	q = queue_create();
 
 
-    /* Various objects */
     short int a = 2;
     char *b = "P2 will teach me threads";
     struct {
@@ -85,7 +84,6 @@ void enqueue_test_one()
     char thing;
     } c = { 10, 'c' };
     int *d = malloc(10 * sizeof(int));
-    /* Push in queue */
     TEST_ASSERT(queue_length(q)==0);
     queue_enqueue(q, &a);
     TEST_ASSERT(queue_length(q)==1);
@@ -142,7 +140,6 @@ void dequeue_test_one()
 	q = queue_create();
 
 
-    /* Various objects */
     short int a = 2;
     char *b = "P2 will teach me threads";
     struct {
@@ -150,7 +147,6 @@ void dequeue_test_one()
     char thing;
     } c = { 10, 'c' };
     int *d = malloc(10 * sizeof(int));
-    /* Push in queue */
     TEST_ASSERT(queue_length(q)==0);
     queue_enqueue(q, &a);
     TEST_ASSERT(queue_length(q)==1);
@@ -162,7 +158,6 @@ void dequeue_test_one()
     TEST_ASSERT(queue_length(q)==4);
 
 
-    /* Retrieve from queue */
     short int *e;
     char *f;
 
@@ -192,7 +187,6 @@ void dequeue_test_one()
 
     queue_dequeue(q, (void**)&h);
     TEST_ASSERT(queue_length(q)==0);
-    //printf("%d\n", sizeof(h));
     TEST_ASSERT(sizeof(*h)==(sizeof(int)));
 }
 
@@ -551,10 +545,6 @@ void delete_test_not_found()
 
 }
 
-/*
-Iterate
-*/
-/* Callback function that increments items */
 static void iterator_inc(queue_t q, void *data)
 {
     int *a = (int*)data;
@@ -572,12 +562,10 @@ void test_iterator_one()
     int data[] = {1, 2, 3, 4, 5, 42, 6, 7, 8, 9};
     size_t i;
 
-    /* Initialize the queue and enqueue items */
     q = queue_create();
     for (i = 0; i < sizeof(data) / sizeof(data[0]); i++)
         queue_enqueue(q, &data[i]);
 
-    /* Increment every item of the queue, delete item '42' */
     queue_iterate(q, iterator_inc);
     TEST_ASSERT(data[0] == 2);
     TEST_ASSERT(queue_length(q) == 9);
@@ -599,12 +587,10 @@ void test_iterator_no_func()
     int data[] = {1, 2, 3, 4, 5, 42, 6, 7, 8, 9};
     size_t i;
 
-    /* Initialize the queue and enqueue items */
     q = queue_create();
     for (i = 0; i < sizeof(data) / sizeof(data[0]); i++)
         queue_enqueue(q, &data[i]);
 
-    /* Increment every item of the queue, delete item '42' */
     TEST_ASSERT(queue_iterate(q, NULL)==-1);
 }
 /*
