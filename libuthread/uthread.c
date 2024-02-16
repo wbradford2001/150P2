@@ -48,8 +48,7 @@ void uthread_yield(void)
 	struct uthread_tcb *nextTCB = malloc(sizeof(struct uthread_tcb*));
 
 
-	//queue_enqueue(mainQ, curThread);//enqueue current thread to run later
-	uthread_ctx_destroy_stack(curThread->top_of_stack);
+	queue_enqueue(mainQ, curThread);//enqueue current thread to run later
 
 	queue_dequeue(mainQ, (void**)&nextTCB);//get next thread to run
 	
@@ -75,7 +74,9 @@ void uthread_exit(void)
 	struct uthread_tcb *nextTCB = malloc(sizeof(struct uthread_tcb*));
 	queue_dequeue(mainQ, (void**)&nextTCB);
 		
-	queue_enqueue(mainQ, curThread);
+	//queue_enqueue(mainQ, curThread);
+	//now we destroy old staack
+	uthread_ctx_destroy_stack(curThread->top_of_stack);
 	
 
 	struct uthread_tcb *tmp = curThread;
