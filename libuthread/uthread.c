@@ -55,7 +55,7 @@ void uthread_yield(void)
 	struct uthread_tcb *tmp = curThread;
 	curThread = nextTCB;//update current thread
 	//switch context
-	uthread_ctx_switch(tmp->context, nextTCB->context);
+	uthread_ctx_switch(tmp->context, curThread->context);
 }
 
 
@@ -83,7 +83,8 @@ void uthread_exit(void)
 	curThread = nextTCB;//set next current thread
 
 	//switch contexts
-	uthread_ctx_switch(tmp->context, nextTCB->context);
+	uthread_ctx_switch(tmp->context, curThread->context);
+	
 	
 }
 
@@ -99,7 +100,13 @@ int uthread_create(uthread_func_t func, void *arg)
 	newTCB->context = malloc(sizeof(uthread_ctx_t));
 	numTCB++;
 	newTCB->TID=numTCB;
-	uthread_ctx_init(newTCB->context, newTCB->top_of_stack,func, arg);
+    if (uthread_ctx_init(newTCB->context, newTCB->top_of_stack, (uthread_func_t)func, arg) == -1) {
+        numTCB--;
+        uthread_ctx_destroy_stack(newTCB->top_of_stack);
+        free(newTCB);
+        return -1; 
+    }	
+	//uthread_ctx_init(newTCB->context, newTCB->top_of_stack,func, arg);
 
 	preempt_enable();
 
@@ -111,75 +118,85 @@ int uthread_create(uthread_func_t func, void *arg)
 //kick off uthread library
 int uthread_run(bool preempt, uthread_func_t func, void *arg)
 {
-	preempt_start(preempt);
+	(void)preempt;
+	preempt_start(0);
 
 	preempt_disable();
 
 	//set up and initializze main thread
-	mainTCB = malloc(sizeof(struct uthread_tcb*));
+    mainTCB = malloc(sizeof(struct uthread_tcb*));
 	mainTCB->top_of_stack= uthread_ctx_alloc_stack();
 	mainTCB->context = malloc(sizeof(uthread_ctx_t));
 
-	//set up new thread to run
+	//create main Q and blockedQ
+	blockedQ=queue_create();
+	mainQ=queue_create();
+
+
+	//set up and initialize new thread
 	struct uthread_tcb *newTCB = malloc(sizeof(struct uthread_tcb*));
 	newTCB->top_of_stack= uthread_ctx_alloc_stack();
 	newTCB->context = malloc(sizeof(uthread_ctx_t));
 	numTCB++;
-	newTCB-> TID = numTCB;
-	uthread_ctx_init(newTCB->context, newTCB->top_of_stack,func, arg);
+	newTCB->TID=numTCB;
+    if (uthread_ctx_init(newTCB->context, newTCB->top_of_stack, (uthread_func_t)func, arg) == -1) {
+        numTCB--;
+        uthread_ctx_destroy_stack(newTCB->top_of_stack);
+        free(newTCB);
+        return -1; 
+    }	
 
-	//create main Q and blockedQ
-	mainQ=queue_create();
-	blockedQ=queue_create();
+
+	//put new thread in queue
+	queue_enqueue(mainQ, newTCB);
+
+
 
 	//enqueue newTCB
-	queue_enqueue(mainQ, newTCB);
 
 	preempt_enable();
 
-	while (1){
+	
 		//get new thread
 		queue_dequeue(mainQ, (void**)&curThread);
 		//switch contexts
 		uthread_ctx_switch(mainTCB->context, curThread->context);
-	}
-
+	
+	return 0;
 
 }
 
 //block uthread (because it called sem)
 void uthread_block(void)
 {
+
+
 	//put current thread in blocked queue
 	queue_enqueue(blockedQ, curThread);
 
-	//set up and allocate next thread ot run
 	struct uthread_tcb *nextTCB = malloc(sizeof(struct uthread_tcb*));
 	queue_dequeue(mainQ, (void**)&nextTCB);
+	
+	//set up and allocate next thread ot run
 	struct uthread_tcb *tmp = curThread;
 	curThread = nextTCB;//update current thread
 
-	//switch contexts
-	uthread_ctx_switch(tmp->context, nextTCB->context);
+
+
+	
+	uthread_ctx_switch(tmp->context, nextTCB->context);//switch contexts
 
 }
 
 //unblock thread because its semaphore has been freed
 void uthread_unblock(struct uthread_tcb *uthread)
 {
-	//enqueue the thread to unblock in the main queu
-	queue_enqueue(mainQ, uthread);
 
 
+    queue_enqueue(mainQ, (void**)uthread);
 
-	//set up and allocate new thread
-	struct uthread_tcb *nextTCB = malloc(sizeof(struct uthread_tcb*));
-	queue_dequeue(mainQ, (void**)&nextTCB);
-	struct uthread_tcb *tmp = curThread;
-	curThread = nextTCB;//update curThread
-
-	//switch contexts
-	uthread_ctx_switch(tmp->context, nextTCB->context);
+    queue_delete(blockedQ, &uthread);
+	
 
 
 }

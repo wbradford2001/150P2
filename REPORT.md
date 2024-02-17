@@ -53,16 +53,16 @@ main Queue.
 
 # semaphore
 To implement sem.c, we created a semaphore struct which has an int member called
-count and a pointer to the most recent thread that is blocked by it. Sem_create
+count and a pointer to a queueu of threads is blocked by it. Sem_create
 creates and returns an instance of a semaphore, and sem_desotry() frees 
 the associate memory. sem_up() increments the count, while sem_down() 
 decrements it. When a thread called sem_down() and the internal count is more 
 than 0, theres nothing to worry about since the thread doesn't have to be 
 blocked, so we just decrement count. If count is 0, however, we add the calling
-thread to the blocked queue, and store the threads TCB in the sem's blockedTCB
+thread to the blocked queue, and store the threads TCB in the sem's blockedTCBs
 member. When we call sem_up(), if there are no threads being blocked by the 
-sem(in other words, if sem->blockedTCB is null) then we simply increament the 
-count by 1. If, however, there are some blocked threads, we call 
+sem(in other words, length of sem->blockedTCBs is 0) then we simply increament 
+the count by 1. If, however, there are some blocked threads, we call 
 u_thread_unblock.
 # preempt
 For preemption, we set up an alarm that would run once every 10,000 micro-
@@ -87,4 +87,7 @@ debug output, ect...)
 # sources
 we used the professors given code and the help manuals given in the 
 project description. 
-# 
+# DISCLAIMER
+One of our group members, William, has a brother, James, in this class,
+and we all met up to talk about the problem from a conceptual standpoint,
+and we each coded our own parts separately. 

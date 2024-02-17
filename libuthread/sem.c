@@ -9,14 +9,17 @@
 
 //semaphore struct
 struct semaphore {
+	queue_t blockedTCBs;
 	int count;
-	struct uthread_tcb *blockedTCB;//pointer to current thread being blocked by semaphore
+	
 };
 
 //creates a semaphore
 sem_t sem_create(size_t count)
 {
 	struct semaphore *newSem = malloc(sizeof(struct semaphore*));
+	
+	newSem->blockedTCBs = queue_create();
 	newSem->count = count;
 	return newSem;
 }
@@ -33,8 +36,13 @@ int sem_down(sem_t sem)
 {
 	//if sem is blocked
 	if (sem->count==0){
-		sem->blockedTCB = &*(uthread_current)();//set current thread as blocked
+
+		queue_enqueue(sem->blockedTCBs,uthread_current());//set current thread as blocked
+		
+
 		uthread_block();//call block on the thread
+
+		
 	} else {
 		//if sem is positive, nothing to worry about, decrement sem
 		sem->count--;
@@ -49,15 +57,16 @@ int sem_down(sem_t sem)
 int sem_up(sem_t sem)
 {
 	//if there is no thread being blocked by semaphore
-	if ((sem->blockedTCB)==NULL){
+	if (queue_length(sem->blockedTCBs) == 0){
 		//increament count
 		sem->count++;
 		return 0;
 	}
 
 	//if thre is a thread being blocked
-	sem->count++;
-	uthread_unblock(sem->blockedTCB);
+	struct uthread_tcb *nextThread = malloc(sizeof(struct uthread_tcb*));
+	queue_dequeue(sem->blockedTCBs, (void**)&nextThread);
+	uthread_unblock(nextThread);
 
 	return 0;
 }
